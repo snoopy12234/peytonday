@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAGARUNE</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #000;
+    color: #fff;
+    font-family: "Press Start 2P", monospace;
+    min-height: 100vh;
+    overflow: hidden;
+    image-rendering: pixelated;
+}
+
+.screen {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(circle at center, #171717 0%, #050505 45%, #000 100%);
+}
+
+
+.intro {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: opacity 1.2s ease;
+}
+
+.intro.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.intro-content {
+    width: min(700px, 88vw);
+    text-align: center;
+}
+
+.intro-text {
+    min-height: 90px;
+    font-size: clamp(10px, 2vw, 15px);
+    line-height: 2.3;
+    opacity: 0;
+}
+
+.intro-text.show {
+    opacity: 1;
+}
+
+.intro-heart {
+    width: 22px;
+    height: 22px;
+    background: #ff3030;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(45deg) scale(0);
+    transition: transform .5s ease;
+    filter: drop-shadow(0 0 10px #ff3030);
+}
+
+.intro-heart::before,
+.intro-heart::after {
+    content: "";
+    width: 22px;
+    height: 22px;
+    background: #ff3030;
+    position: absolute;
+    border-radius: 50%;
+}
+
+.intro-heart::before {
+    left: -11px;
+}
+
+.intro-heart::after {
+    top: -11px;
+}
+
+.intro-heart.visible {
+    transform: translate(-50%, -50%) rotate(45deg) scale(1);
+}
+
+.intro-heart.pulse {
+    animation: heartPulse .7s infinite alternate;
+}
+
+@keyframes heartPulse {
+    from {
+        filter: drop-shadow(0 0 5px #ff3030);
+    }
+
+    to {
+        filter: drop-shadow(0 0 25px #ff3030);
+    }
+}
+
+.intro-prompt {
+    position: absolute;
+    bottom: 45px;
+    width: 100%;
+    text-align: center;
+    font-size: 9px;
+    opacity: 0;
+    animation: promptBlink 1s infinite alternate;
+}
+
+.intro-prompt.show {
+    opacity: 1;
+}
+
+@keyframes promptBlink {
+    from {
+        opacity: .25;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* =========================
+   TITLE
+========================= */
+
+.title-screen {
+    text-align: center;
+    z-index: 2;
+}
+
+.title {
+    font-size: clamp(35px, 8vw, 90px);
+    letter-spacing: 4px;
+    text-shadow:
+        5px 5px 0 #333,
+        -2px -2px 0 #fff;
+    margin-bottom: 25px;
+}
+
+.subtitle {
+    font-size: 11px;
+    margin-bottom: 60px;
+    line-height: 2;
+}
+
+.begin {
+    font-family: inherit;
+    background: transparent;
+    border: 0;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 12px 20px;
+}
+
+.begin:hover {
+    color: #ff3030;
+}
+
+.begin:hover::before {
+    content: "♥ ";
+    color: #ff3030;
+}
+
+/* =========================
+   GAME UI
+========================= */
+
+.game {
+    display: none;
+    width: min(1000px, 94vw);
+    height: min(700px, 92vh);
+    position: relative;
+}
+
+.game-header {
+    border: 4px solid white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    margin-bottom: 12px;
+}
+
+.name {
+    color: #ff3030;
+}
+
+.main-panel {
+    height: calc(100% - 70px);
+    border: 4px solid white;
+    display: grid;
+    grid-template-columns: 1fr 250px;
+}
+
+/* =========================
+   CHARACTER AREA
+========================= */
+
+.character-area {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background:
+        linear-gradient(#050505 1px, transparent 1px),
+        linear-gradient(90deg, #050505 1px, transparent 1px);
+    background-size: 25px 25px;
+}
+
+.character {
+    font-size: 90px;
+    margin-bottom: 30px;
+    animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.dialogue {
+    width: 85%;
+    border: 4px solid white;
+    background: black;
+    padding: 20px;
+    min-height: 120px;
+    line-height: 2;
+    font-size: 11px;
+}
+
+/* =========================
+   MENU
+========================= */
+
+.menu {
+    border-left: 4px solid white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+}
+
+.menu button {
+    width: 100%;
+    padding: 17px 10px;
+    background: transparent;
+    border: 3px solid white;
+    color: white;
+    font-family: inherit;
+    font-size: 10px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.menu button:hover {
+    background: white;
+    color: black;
+}
+
+.menu button:hover::before {
+    content: "♥ ";
+    color: #ff3030;
+}
+
+/* =========================
+   POPUPS
+========================= */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 20px;
+}
+
+.popup {
+    width: min(650px, 95vw);
+    max-height: 85vh;
+    overflow-y: auto;
+    border: 5px solid white;
+    background: black;
+    padding: 25px;
+    box-shadow: 10px 10px 0 #333;
+}
+
+.popup h2 {
+    font-size: 16px;
+    margin-bottom: 25px;
+}
+
+.popup p {
+    font-size: 10px;
+    line-height: 2.2;
+    margin-bottom: 20px;
+}
+
+.close {
+    float: right;
+    border: 2px solid white;
+    background: black;
+    color: white;
+    font-family: inherit;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.close:hover {
+    background: white;
+    color: black;
+}
+
+/* =========================
+   MUSIC
+========================= */
+
+.song {
+    border: 3px solid white;
+    padding: 15px;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+
+.song:hover,
+.song.active {
+    background: white;
+    color: black;
+}
+
+.song-title {
+    font-size: 10px;
+    margin-bottom: 8px;
+}
+
+.song-artist {
+    font-size: 7px;
+    opacity: .7;
+}
+
+.music-controls {
+    border-top: 3px solid white;
+    margin-top: 20px;
+    padding-top: 20px;
+}
+
+audio {
+    width: 100%;
+}
+
+/* =========================
+   MEMORY CARDS
+========================= */
+
+.memory {
+    border: 3px solid white;
+    padding: 18px;
+    margin-bottom: 15px;
+}
+
+.memory h3 {
+    color: #ff3030;
+    font-size: 10px;
+    margin-bottom: 12px;
+}
+
+.memory p {
+    margin: 0;
+}
+
+/* =========================
+   SAVE
+========================= */
+
+.save-point {
+    text-align: center;
+    padding: 20px;
+    border: 3px dashed white;
+}
+
+.save-star {
+    font-size: 50px;
+    margin-bottom: 25px;
+    animation: saveSpin 3s linear infinite;
+}
+
+@keyframes saveSpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+
+    body {
+        overflow: auto;
+    }
+
+    .game {
+        width: 94vw;
+        height: auto;
+        min-height: 95vh;
+    }
+
+    .main-panel {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+
+    .character-area {
+        min-height: 430px;
+    }
+
+    .menu {
+        border-left: 0;
+        border-top: 4px solid white;
+    }
+
+    .game-header {
+        font-size: 8px;
+    }
+
+    .character {
+        font-size: 65px;
+    }
+
+    .dialogue {
+        font-size: 8px;
+    }
+
+    .popup {
+        padding: 18px;
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- =========================
+     OPENING SEQUENCE
+========================= -->
+
+<div class="intro" id="intro">
+
+```
+<div class="intro-content">
+    <div class="intro-text" id="introText"></div>
+</div>
+
+<div class="intro-heart" id="introHeart"></div>
+
+<div class="intro-prompt" id="introPrompt">
+    CLICK TO CONTINUE
+</div>
+```
+
+</div>
+
+<div class="screen">
+
+```
+<!-- TITLE SCREEN -->
+
+<div class="title-screen" id="titleScreen">
+
+    <div class="title">
+        PEYTOWN
+    </div>
+
+    <div class="subtitle">
+        YOU'RE 17!<br>
+        HAPPY BIRTHDAY BUDDY!
+    </div>
+
+    <button class="begin" onclick="startGame()">
+        BEGIN
+    </button>
+
+</div>
+
+
+<!-- GAME -->
+
+<div class="game" id="game">
+
+    <div class="game-header">
+
+        <span class="name">
+            ♥ PEYTON
+        </span>
+
+        <span>
+            LV 17 &nbsp; HP 160/160
+        </span>
+
+    </div>
+
+
+    <div class="main-panel">
+
+        <div class="character-area">
+
+            <div class="character">
+                ♠
+            </div>
+
+            <div class="dialogue">
+
+                <span id="dialogueText"></span>
+
+            </div>
+
+        </div>
+
+
+        <div class="menu">
+
+            <button onclick="openPopup('message')">
+                MESSAGE
+            </button>
+
+            <button onclick="openPopup('music')">
+                MUSIC
+            </button>
+
+            <button onclick="openPopup('memories')">
+                MEMORIES
+            </button>
+
+            <button onclick="openPopup('items')">
+                ITEMS
+            </button>
+
+            <button onclick="openPopup('save')">
+                SAVE
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+<!-- =========================
+     MESSAGE POPUP
+========================= -->
+
+<div class="overlay" id="message">
+
+```
+<div class="popup">
+
+    <button class="close" onclick="closePopup('message')">
+        X
+    </button>
+
+    <h2>♥ MESSAGE</h2>
+
+    <p>
+        TODAY IS PEYTON'S BIRTHDAY.
+    </p>
+
+    <p>
+        Somewhere in this gay ass world,
+        an awesome dude has turned 17.
+    </p>
+
+    <p>
+        None other than my bestfriend.
+    </p>
+
+    <p>
+        HAPPY BIRTHDAY, PEYTON!!!
+    </p>
+
+    <p>
+        I hope to celebrate infinite birthdays with you buddy. I love you forevermore!
+    </p>
+
+    <p>
+        I will spend all my days with you being my other half
+        Please never forget me.
+    </p>
+
+</div>
+```
+
+</div>
+
+<!-- =========================
+     MUSIC POPUP
+========================= -->
+
+<div class="overlay" id="music">
+
+```
+<div class="popup">
+
+    <button class="close" onclick="closePopup('music')">
+        X
+    </button>
+
+    <h2>♪ MUSIC BOX</h2>
+
+    <div id="songList"></div>
+
+    <div class="music-controls">
+
+        <p>
+            NOW PLAYING:
+            <span id="nowPlaying">
+                NOTHING
+            </span>
+        </p>
+
+        <audio id="audioPlayer" controls></audio>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+<!-- =========================
+     MEMORIES POPUP
+========================= -->
+
+<div class="overlay" id="memories">
+
+```
+<div class="popup">
+
+    <button class="close" onclick="closePopup('memories')">
+        X
+    </button>
+
+    <h2>★ MEMORIES</h2>
+
+    <div class="memory">
+
+        <h3>MEMORY 01</h3>
+
+        <p>
+            Haircare 2020
+        </p>
+
+    </div>
+
+    <div class="memory">
+
+        <h3>MEMORY 02</h3>
+
+        <p>
+            "Are you showering? Why didn't you call me!"        </p>
+
+    </div>
+
+    <div class="memory">
+
+        <h3>MEMORY 03</h3>
+
+        <p>
+            "You saved my life that night on the roof of your hotel..."
+        </p>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+<!-- =========================
+     ITEMS POPUP
+========================= -->
+
+<div class="overlay" id="items">
+
+```
+<div class="popup">
+
+    <button class="close" onclick="closePopup('items')">
+        X
+    </button>
+
+    <h2>ITEMS</h2>
+
+    <div class="memory">
+
+        <h3>CONDITIONER</h3>
+
+        <p>
+            A gift from the gods.
+            Listen to a friend's advice about this.
+        </p>
+
+    </div>
+
+    <div class="memory">
+
+        <h3>FOOTBALL</h3>
+
+        <p>
+            A football..?
+            Maybe you should watch a recovering soldier throw it 2 inches far.
+        </p>
+
+    </div>
+
+    <div class="memory">
+
+        <h3>1 MEXICAN</h3>
+
+        <p>
+            One mexican down.        </p>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+<!-- =========================
+     SAVE POPUP
+========================= -->
+
+<div class="overlay" id="save">
+
+```
+<div class="popup">
+
+    <button class="close" onclick="closePopup('save')">
+        X
+    </button>
+
+    <div class="save-point">
+
+        <div class="save-star">
+            ✦
+        </div>
+
+        <h2>
+            SAVE POINT
+        </h2>
+
+        <p>
+            My love for you will forever lie within me!
+        </p>
+
+        <p>
+            HAPPY BIRTHDAY, PEYTON.
+        </p>
+
+        <button
+            class="begin"
+            onclick="closePopup('save')">
+
+            CONTINUE
+
+        </button>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+<script>
+
+/* =========================
+   OPENING SEQUENCE
+========================= */
+
+const intro = document.getElementById("intro");
+const introText = document.getElementById("introText");
+const introHeart = document.getElementById("introHeart");
+const introPrompt = document.getElementById("introPrompt");
+
+const introLines = [
+    "ANOTHER YEAR HAS PASSED.",
+    "ANOTHER ADVENTURE BEGINS.",
+    "TODAY...",
+    "A FAGGOT HAS TURNED 17"
+];
+
+let currentLine = 0;
+let introStarted = false;
+
+
+function typeIntro(text, callback) {
+
+    introText.innerHTML = "";
+    introText.classList.add("show");
+
+    let i = 0;
+
+    const typing = setInterval(() => {
+
+        introText.innerHTML += text.charAt(i);
+
+        i++;
+
+        if (i >= text.length) {
+
+            clearInterval(typing);
+
+            setTimeout(() => {
+
+                introText.classList.remove("show");
+
+                setTimeout(callback, 500);
+
+            }, 900);
+
+        }
+
+    }, 45);
+}
+
+
+function playIntro() {
+
+    if (introStarted) return;
+
+    introStarted = true;
+
+    setTimeout(() => {
+
+        typeIntro(
+            introLines[currentLine],
+            nextIntroLine
+        );
+
+    }, 700);
+
+}
+
+
+function nextIntroLine() {
+
+    currentLine++;
+
+    if (currentLine < introLines.length) {
+
+        setTimeout(() => {
+
+            typeIntro(
+                introLines[currentLine],
+                nextIntroLine
+            );
+
+        }, 300);
+
+    } else {
+
+        showHeart();
+
+    }
+
+}
+
+
+function showHeart() {
+
+    introHeart.classList.add("visible");
+
+    setTimeout(() => {
+
+        introHeart.classList.add("pulse");
+
+        introText.innerHTML =
+            "HAPPY BIRTHDAY, PEYTON.";
+
+        introText.classList.add("show");
+
+        setTimeout(() => {
+
+            introPrompt.classList.add("show");
+
+        }, 1000);
+
+    }, 600);
+
+}
+
+
+intro.addEventListener("click", () => {
+
+    if (!introPrompt.classList.contains("show")) return;
+
+    intro.classList.add("fade-out");
+
+    setTimeout(() => {
+
+        intro.style.display = "none";
+
+    }, 1200);
+
+});
+
+
+window.addEventListener("load", playIntro);
+
+
+/* =========================
+   TITLE → GAME
+========================= */
+
+function startGame() {
+
+    document.getElementById("titleScreen").style.display = "none";
+
+    document.getElementById("game").style.display = "block";
+
+    typeDialogue(
+        "Today is Peyton's birthday... You feel like something important is about to happen."
+    );
+
+}
+
+
+/* =========================
+   TYPEWRITER
+========================= */
+
+function typeDialogue(text) {
+
+    const element =
+        document.getElementById("dialogueText");
+
+    element.innerHTML = "";
+
+    let i = 0;
+
+    const interval = setInterval(() => {
+
+        element.innerHTML += text.charAt(i);
+
+        i++;
+
+        if (i >= text.length) {
+
+            clearInterval(interval);
+
+        }
+
+    }, 35);
+
+}
+
+
+/* =========================
+   POPUPS
+========================= */
+
+function openPopup(id) {
+
+    document.getElementById(id).style.display = "flex";
+
+}
+
+
+function closePopup(id) {
+
+    document.getElementById(id).style.display = "none";
+
+}
+
+
+/* =========================
+   MUSIC
+========================= */
+
+const songs = [
+
+    {
+        title: "Happy Birthday",
+        artist: "for Peyton",
+        file: "message.mp3"
+    },
+
+    {
+        title: "How to Save a Life",
+        artist: "The Fray",
+        file: "thefray.mp3"
+    },
+
+    {
+        title: "Secret Track",
+        artist: "???",
+        file: "fob.mp3"
+    }
+
+];
+
+
+const songList =
+    document.getElementById("songList");
+
+const audioPlayer =
+    document.getElementById("audioPlayer");
+
+const nowPlaying =
+    document.getElementById("nowPlaying");
+
+
+songs.forEach((song) => {
+
+    const div = document.createElement("div");
+
+    div.className = "song";
+
+    div.innerHTML = `
+        <div class="song-title">
+            ${song.title}
+        </div>
+
+        <div class="song-artist">
+            ${song.artist}
+        </div>
+    `;
+
+    div.onclick = () => {
+
+        document
+            .querySelectorAll(".song")
+            .forEach(el =>
+                el.classList.remove("active")
+            );
+
+        div.classList.add("active");
+
+        audioPlayer.src = song.file;
+
+        nowPlaying.textContent =
+            song.title;
+
+        audioPlayer.play();
+
+    };
+
+    songList.appendChild(div);
+
+});
+
+
+/* =========================
+   RANDOM STARS
+========================= */
+
+for (let i = 0; i < 80; i++) {
+
+    const star =
+        document.createElement("div");
+
+    star.className = "star";
+
+    star.style.left =
+        Math.random() * 100 + "%";
+
+    star.style.top =
+        Math.random() * 100 + "%";
+
+    star.style.animationDelay =
+        Math.random() * 2 + "s";
+
+    document
+        .querySelector(".screen")
+        .appendChild(star);
+
+}
+
+
+/* =========================
+   CLOSE POPUPS OUTSIDE
+========================= */
+
+document
+    .querySelectorAll(".overlay")
+    .forEach(overlay => {
+
+        overlay.addEventListener("click", function(e) {
+
+            if (e.target === overlay) {
+
+                overlay.style.display = "none";
+
+            }
+
+        });
+
+    });
+
+</script>
+
+</body>
+</html>
